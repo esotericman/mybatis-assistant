@@ -1,0 +1,139 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+    <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
+    <id>org.flmelody.mybatis.assistant</id>
+
+    <!-- Public plugin name should be written in Title Case.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
+    <name>Mybatis Assistant</name>
+
+    <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
+    <vendor email="support@flmelody.org" url="https://www.flmelody.org">Flmelody</vendor>
+
+    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
+         Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
+    <description>
+        <![CDATA[
+        Powerful Mybatis Assistant,Simplified Mybatis Plugin.Refereed Many Open Source Code Or Copied, Like MybatisX,
+        Free Mybatis Plugin And So On.<br>
+        Features:
+        <ul>
+          <li>mapper and xml can jump back and forth</li>
+          <li>mybatis.xml,mapper.xml prompt</li>
+          <li>integrate mybatis generator Gui</li>
+        </ul>
+        ]]>
+    </description>
+    <!-- Product and plugin compatibility requirements.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.database</depends>
+    <depends>com.intellij.java</depends>
+    <depends>org.jetbrains.kotlin</depends>
+    <depends>com.intellij.spring</depends>
+    <depends>com.intellij.spring.boot</depends>
+    <depends>org.intellij.intelliLang</depends>
+    <!-- Extension points defined by the plugin.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+    <extensions defaultExtensionNs="com.intellij">
+        <projectService id="flmelody.TemplatesSettings"
+                        serviceImplementation="org.flmelody.mybatis.generator.setting.TemplatesSettings"/>
+        <projectService serviceImplementation="org.flmelody.mybatis.service.JavaService"/>
+        <projectService serviceImplementation="org.flmelody.mybatis.service.AnnotationService"/>
+        <projectService serviceImplementation="org.flmelody.mybatis.service.EditorService"/>
+
+        <projectService serviceImplementation="org.flmelody.mybatis.alias.AliasFacade"/>
+
+        <projectService serviceImplementation="org.flmelody.mybatis.locator.MapperLocator"/>
+
+        <notificationGroup id="Mybatis Assistant Notification" displayType="BALLOON"/>
+
+        <!--文件图标-->
+        <iconProvider implementation="org.flmelody.mybatis.provider.XmlAndMapperIconProvider"/>
+        <!--设置-->
+        <applicationConfigurable instance="org.flmelody.mybatis.setting.MybatisConfigurable"/>
+        <!--mapper.xml属性提示-->
+        <dom.fileMetaData id="flmelody.MapperDescription"
+                          rootTagName="mapper"
+                          implementation="org.flmelody.mybatis.dom.description.MapperDescription"/>
+        <!--mybatis-config.xml属性提示-->
+        <dom.fileMetaData id="flmelody.ConfigurationDescription"
+                          rootTagName="configuration"
+                          implementation="org.flmelody.mybatis.dom.description.ConfigurationDescription"/>
+
+        <!-- Mapper类 重命名 -->
+        <refactoring.elementListenerProvider
+                implementation="org.flmelody.mybatis.support.refactoring.MapperRefactoringProvider"/>
+
+        <definitionsScopedSearch implementation="org.flmelody.mybatis.support.query.MapperToXmlSearch"/>
+
+        <!-- 与搜索配套的跳转 -->
+<!--        <gotoTargetRendererProvider order="first"-->
+<!--                                    implementation="org.flmelody.mybatis.provider.GotoMapperXmlSchemaTypeRendererProvider"/>-->
+
+
+        <!--文件模板组，新建文件选择模板, 这里只是定义一个模板, 在mapper类方法定义完成后, 可以根据这个空模板生成一个文件 -->
+        <fileTemplateGroup id="flmelody.MybatisFileTemplateDescriptorFactory"
+                           implementation="org.flmelody.mybatis.support.template.MybatisFileTemplateDescriptorFactory"/>
+
+        <!--附加的LiveTemplate模板-->
+        <defaultLiveTemplates id="flmelody.SqlLiveTemplateProvider"
+                              file="liveTemplates/sql"/>
+
+        <!-- 语法校验，让没有生成代码的方法产生错误 -->
+        <localInspection language="JAVA" shortName="MybatisMapperMethodInspection"
+                         id="flmelody.MybatisMapperMethodInspection"
+                         displayName="Mapper method inspection"
+                         groupName="Mybatis" enabledByDefault="true" level="ERROR"
+                         implementationClass="org.flmelody.mybatis.inspection.MapperMethodInspection"/>
+        <localInspection language="XML" shortName="MybatisMapperXmlInspection"
+                         enabledByDefault="true"
+                         level="ERROR"
+                         id="flmelody.MybatisMapperXmlInspection"
+                         displayName="Mapper xml inspection"
+                         groupName="Mybatis"
+                         hasStaticDescription="true"
+                         implementationClass="org.flmelody.mybatis.inspection.MapperXmlInspection"/>
+
+        <!--代码行插件，实现代码导航功能-->
+        <codeInsight.lineMarkerProvider language="XML"
+                                        implementationClass="org.flmelody.mybatis.provider.StatementLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="JAVA"
+                                        implementationClass="org.flmelody.mybatis.provider.InjectionLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="JAVA"
+                                        implementationClass="org.flmelody.mybatis.provider.MapperLineMarkerProvider"/>
+
+        <!-- 生成参数注解 @Param -->
+        <intentionAction id="flmelody.GenerateParamAnnotationIntention">
+            <className>org.flmelody.mybatis.intention.GenerateParamAnnotationIntention</className>
+        </intentionAction>
+        <!-- 通过方法名生成对应的 查询语句 -->
+        <intentionAction id="flmelody.GenerateStatementIntention">
+            <className>org.flmelody.mybatis.intention.GenerateStatementIntention</className>
+        </intentionAction>
+        <!-- 生成mybatis mapper.xml文件 -->
+        <intentionAction order="first" id="flmelody.GenerateMapperIntention">
+            <className>org.flmelody.mybatis.intention.GenerateMapperIntention</className>
+        </intentionAction>
+
+
+        <!-- mapper.xml文件 #{} 区域的引用跳转 -->
+        <psi.referenceContributor id="hashMarkerReferenceContributor"
+                                  implementation="org.flmelody.mybatis.reference.ContextHashMarkReferenceContributor"
+                                  language="JAVA"/>
+
+        <!-- 应用服务, 必须放在主文件,否则 XmlAndMapperIconProvider 会加载不到-->
+        <applicationService id="flmelody.MybatisSetting"
+                            serviceImplementation="org.flmelody.mybatis.setting.MybatisSettings"/>
+        <!-- 使用 Alt+Delete 删除方法时, 也删掉对应的标签 -->
+        <refactoring.safeDeleteProcessor id="MapperMethodSafeDeleteProcessor"
+                                         implementation="org.flmelody.mybatis.support.refactoring.MapperMethodSafeDeleteProcessor"/>
+    </extensions>
+    <actions>
+        <action id="org.flmelody.mybatis.action.GeneratorEntryAction"
+                class="org.flmelody.mybatis.action.GeneratorEntryAction" text="Mybatis Generator">
+            <add-to-group group-id="DatabaseViewPopupMenu" anchor="first"/>
+        </action>
+    </actions>
+</idea-plugin>
